@@ -28,19 +28,19 @@ export class ProfileComponent implements OnInit {
   constructor(private authService: AuthService, private fb: FormBuilder, private snackBarService: SnackBarService, private router: Router, private userService: UserService,
   ) { }
 
-  
+
 
   ngOnInit() {
     this.userService.getUserData().subscribe({
       next: (data) => {
         this.currentUser = data;
         this.profileForm.patchValue({
-        name: this.currentUser.name,
-        email: this.currentUser.email,
-        age: this.currentUser.age,
-        gender: this.currentUser.gender
-      });
-      
+          name: this.currentUser.name,
+          email: this.currentUser.email,
+          age: this.currentUser.age,
+          gender: this.currentUser.gender
+        });
+
       },
       error: (error) => {
         console.error('Error fetching user data:', error);
@@ -53,8 +53,8 @@ export class ProfileComponent implements OnInit {
       age: [this.currentUser?.age ?? null, [Validators.min(1), Validators.max(80)]],      // make age optional
       gender: [this.currentUser?.gender ?? null] // make gender optional
     });
-    
-    
+
+
 
 
     this.passwordForm = this.fb.group({
@@ -69,10 +69,12 @@ export class ProfileComponent implements OnInit {
   }
 
   getInitials(): string {
-    if (!this.currentUser?.name) return 'U';
-    return this.currentUser.name
-      .split(' ')
-      .map((n: string) => n[0])
+    const name = this.currentUser?.name?.trim();
+    if (!name) return 'U';
+    return name
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((w: string) => w[0])
       .join('')
       .toUpperCase();
   }
@@ -125,9 +127,9 @@ export class ProfileComponent implements OnInit {
         // success handling (e.g., toast, UI update)
         if (response.success) {
           this.snackBarService.showSuccess('✅ Profile updated!');
-          // setTimeout(() => {
-          //   this.router.navigate(['/']);
-          // }, 500);
+          setTimeout(() => {
+            this.router.navigate(['/']);
+          }, 500);
         }
       },
       error: (err) => {
@@ -136,7 +138,7 @@ export class ProfileComponent implements OnInit {
         this.errorMessage = err.error?.error || 'Update failed. Please try again.';
         this.snackBarService.showError(`❌ ${this.errorMessage}`);
         console.log(err.error.error);
-    
+
       }
     });
   }

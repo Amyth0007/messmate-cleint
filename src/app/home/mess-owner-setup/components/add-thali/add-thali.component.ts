@@ -347,7 +347,7 @@ export class AddThaliComponent implements OnInit, OnDestroy {
           },
           error: (error) => {
             console.error('Error creating thali:', error);
-            this.snackBar.showError('Error creating thali: Cannot create another thali for same mess, same date and same time. Try editing existing thali');
+            this.snackBar.showError('Error creating thali: Cannot create another thali for same mess, same date and same type. Try editing existing thali');
           }
         });
       }

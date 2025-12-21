@@ -25,13 +25,14 @@ export class ThaliService {
 
   // Transform new thali data (without id) to backend format
   private transformNewThaliToBackendFormat(thaliData: Omit<Thali, 'id' | 'available_date' | 'availableFrom' | 'availableUntil'>): any {
+        // debugger;
     return {
       thali_name: thaliData.thaliName,
       type: thaliData.type,
       published: thaliData.published || false,
       editable: thaliData.editable !== false,
-      available_from: this.formatTimeToDateTime(thaliData.timeFrom),
-      available_until: this.formatTimeToDateTime(thaliData.timeTo),
+      available_from: thaliData.timeFrom,
+      available_until: thaliData.timeTo,
       rotis: thaliData.rotis,
       sabzi: thaliData.sabzi,
       daal: thaliData.daal,
@@ -74,26 +75,23 @@ export class ThaliService {
     };
   }
 
-  private formatTimeToDateTime(time: string): string {
-    const today = new Date().toISOString().split('T')[0];
-    return `${today}T${time}:00.000Z`;
-  }
-
   // For adding new thali - accepts data without id
   addThali(thaliData: Omit<Thali, 'id' | 'available_date' | 'availableFrom' | 'availableUntil'>): Observable<Thali> {
     const backendThali = this.transformNewThaliToBackendFormat(thaliData);
-    return this.http.post<Thali>(`${this.apiUrl}/add`, backendThali, { headers: this.getHeaders() });
+    // debugger;
+    return this.http.post<Thali>(`${this.apiUrl}/add-thali`, backendThali, { headers: this.getHeaders() });
   }
 
   // For updating existing thali - requires id
   updateThali(thaliId: number, thaliData: Omit<Thali, 'id' | 'available_date' | 'availableFrom' | 'availableUntil'>): Observable<any> {
     const backendThali = this.transformNewThaliToBackendFormat(thaliData);
-    return this.http.put(`${this.apiUrl}/update/${thaliId}`, backendThali, { headers: this.getHeaders() });
+    debugger;
+    return this.http.put(`${this.apiUrl}/update-thali/${thaliId}`, backendThali, { headers: this.getHeaders() });
   }
 
   // Delete a thali (soft delete)
   deleteThali(thaliId: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/delete/${thaliId}`, { headers: this.getHeaders() });
+    return this.http.delete(`${this.apiUrl}/delete-thali/${thaliId}`, { headers: this.getHeaders() });
   }
 
   // Get thalis with optional filters
@@ -113,7 +111,7 @@ export class ThaliService {
     }
 
     // If no filters are provided, this will get ALL thalis for the mess
-    return this.http.get(`${this.apiUrl}/get`, {
+    return this.http.get(`${this.apiUrl}/get-thali`, {
       headers: this.getHeaders(),
       params: params
     });
@@ -142,7 +140,7 @@ export class ThaliService {
 
   // Toggle publish status
   togglePublishStatus(thaliId: number, published: boolean): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/publish/${thaliId}`,
+    return this.http.patch(`${this.apiUrl}/publish-thali/${thaliId}`,
       { published },
       { headers: this.getHeaders() }
     );
