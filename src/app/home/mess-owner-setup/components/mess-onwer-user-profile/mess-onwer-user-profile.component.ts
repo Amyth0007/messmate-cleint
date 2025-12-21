@@ -15,6 +15,7 @@ import { NavbarComponent } from '../../../shared/navbar/navbar.component';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { Router } from '@angular/router';
 @Component({
   selector: 'app-mess-onwer-user-profile',
   templateUrl: './mess-onwer-user-profile.component.html',
@@ -24,7 +25,7 @@ import { map } from 'rxjs/operators';
     CommonModule,
     ReactiveFormsModule,
     AuthInputComponent,
-    AuthButtonComponent,    
+    AuthButtonComponent,
   ]
 })
 export class MessOnwerUserProfileComponent implements OnInit {
@@ -45,17 +46,18 @@ export class MessOnwerUserProfileComponent implements OnInit {
   imageUrl: any = null;
   imageUploading: boolean = true;
   submitted = false;
-    registering = false;
-    lat: number | null = null;
-    lng: number | null = null;
-    addressLoading: boolean = false;
+  registering = false;
+  lat: number | null = null;
+  lng: number | null = null;
+  addressLoading: boolean = false;
   constructor(
     private authService: AuthService,
     private fb: FormBuilder,
     private snackBarService: SnackBarService,
     private userService: UserService,
     private messService: MessService,
-    private http: HttpClient
+    private http: HttpClient,
+    private router: Router
   ) { }
 
   ngOnInit() {
@@ -134,10 +136,12 @@ export class MessOnwerUserProfileComponent implements OnInit {
   }
 
   getInitials(): string {
-    if (!this.currentUser?.name) return 'U';
-    return this.currentUser.name
-      .split(' ')
-      .map((n: string) => n[0])
+    const name = this.currentUser?.name?.trim();
+    if (!name) return 'U';
+    return name
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((w: string) => w[0])
       .join('')
       .toUpperCase();
   }
@@ -156,95 +160,95 @@ export class MessOnwerUserProfileComponent implements OnInit {
     }
     this.passwordForm.updateValueAndValidity();
   }
- 
+
 
   uploadImageToCloudinary(file: File): Observable<string> {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('upload_preset', 'mess_owner'); 
+    formData.append('upload_preset', 'mess_owner');
     return this.http.post<any>('https://api.cloudinary.com/v1_1/dd8oitnyu/image/upload', formData)
-    .pipe(
-      map((response: any) => response.url)
-    );
+      .pipe(
+        map((response: any) => response.url)
+      );
   }
 
   onUploadImage(event: any) {
     const file = event.target.files[0];
     if (file) {
-        this.selectedImageName = file.name;
-        this.imageUploading = false;
-    
-        this.uploadImageToCloudinary(file).subscribe({
-          next: (url: any) => {
-            this.imageUrl = url;
+      this.selectedImageName = file.name;
+      this.imageUploading = false;
+
+      this.uploadImageToCloudinary(file).subscribe({
+        next: (url: any) => {
+          this.imageUrl = url;
           this.messForm.patchValue({
             image: this.imageUrl
           });
-            this.imageUploading = true;
-            this.currentMess.image = this.imageUrl
-          },
-          error: () => {
-            alert('Image upload failed.');
-            this.imageUploading = false;
-          }
-        });
-      }
-  }
-
-    async onDetectLocation() {
-      if (!navigator.geolocation) {
-        alert('Geolocation is not supported by your browser.');
-        return;
-      }
-    
-      this.addressLoading = true;
-    
-      try {
-        const position = await this.getCurrentPosition();
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
-    
-        this.lat = lat;
-        this.lng = lng;
-    
-        const address = await this.reverseGeocode(lat, lng);
-        this.address = address || 'Address not found';
-    
-        this.messForm.patchValue({ location: this.address });
-      } catch (error) {
-        console.error('Location detection failed:', error);
-        alert('Unable to retrieve your location.');
-        this.address = 'Address not found';
-      } finally {
-        this.addressLoading = false;
-      }
-    }
-    
-    private getCurrentPosition(): Promise<GeolocationPosition> {
-      return new Promise((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0
-        });
+          this.imageUploading = true;
+          this.currentMess.image = this.imageUrl
+        },
+        error: () => {
+          alert('Image upload failed.');
+          this.imageUploading = false;
+        }
       });
     }
-    
-    private async reverseGeocode(lat: number, lng: number): Promise<string | null> {
-      const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`;
-      try {
-        const response = await fetch(url, {
-          headers: {
-            'Accept': 'application/json',
-          }
-        });
-        const data = await response.json();
-        return data?.display_name ?? null;
-      } catch (err) {
-        console.error('Reverse geocoding failed:', err);
-        return null;
-      }
+  }
+
+  async onDetectLocation() {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser.');
+      return;
     }
+
+    this.addressLoading = true;
+
+    try {
+      const position = await this.getCurrentPosition();
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+
+      this.lat = lat;
+      this.lng = lng;
+
+      const address = await this.reverseGeocode(lat, lng);
+      this.address = address || 'Address not found';
+
+      this.messForm.patchValue({ location: this.address });
+    } catch (error) {
+      console.error('Location detection failed:', error);
+      alert('Unable to retrieve your location.');
+      this.address = 'Address not found';
+    } finally {
+      this.addressLoading = false;
+    }
+  }
+
+  private getCurrentPosition(): Promise<GeolocationPosition> {
+    return new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject, {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      });
+    });
+  }
+
+  private async reverseGeocode(lat: number, lng: number): Promise<string | null> {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`;
+    try {
+      const response = await fetch(url, {
+        headers: {
+          'Accept': 'application/json',
+        }
+      });
+      const data = await response.json();
+      return data?.display_name ?? null;
+    } catch (err) {
+      console.error('Reverse geocoding failed:', err);
+      return null;
+    }
+  }
 
   onUpdateProfile() {
     if (this.profileForm.invalid) {
@@ -272,7 +276,10 @@ export class MessOnwerUserProfileComponent implements OnInit {
       next: (response) => {
         if (response.success) {
           this.snackBarService.showSuccess('✅ Profile updated!');
-          this.loadUserData();
+          // this.loadUserData();
+          setTimeout(() => {
+            this.router.navigate(['/mess-owner/setup/my-thalis'])
+          }, 500);
         }
       },
       error: (err) => {
@@ -310,7 +317,10 @@ export class MessOnwerUserProfileComponent implements OnInit {
       next: (response: any) => {
         if (response.success) {
           this.snackBarService.showSuccess('✅ Mess updated successfully!');
-          this.loadMessData();
+          // this.loadMessData();
+          setTimeout(() => {
+            this.router.navigate(['/mess-owner/setup/my-thalis'])
+          }, 500);
         }
       },
       error: (err) => {
@@ -321,38 +331,38 @@ export class MessOnwerUserProfileComponent implements OnInit {
   }
 
   // Add these to your component class
-isDragOver = false;
+  isDragOver = false;
 
-onDragOver(event: DragEvent) {
-  event.preventDefault();
-  event.stopPropagation();
-  this.isDragOver = true;
-}
-
-onDragLeave(event: DragEvent) {
-  event.preventDefault();
-  event.stopPropagation();
-  this.isDragOver = false;
-}
-
-onDrop(event: DragEvent) {
-  event.preventDefault();
-  event.stopPropagation();
-  this.isDragOver = false;
-  
-  if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
-    this.onUploadImage({ target: { files: event.dataTransfer.files } });
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = true;
   }
-}
 
-triggerFileInput() {
-  document.getElementById('messImageUpload')?.click();
-}
+  onDragLeave(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = false;
+  }
 
-removeImage() {
-  this.selectedImage = null;
-  this.selectedImageName = '';
-  this.selectedImagePreview = '';
-  this.currentMess.image = ''
-}
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = false;
+
+    if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
+      this.onUploadImage({ target: { files: event.dataTransfer.files } });
+    }
+  }
+
+  triggerFileInput() {
+    document.getElementById('messImageUpload')?.click();
+  }
+
+  removeImage() {
+    this.selectedImage = null;
+    this.selectedImageName = '';
+    this.selectedImagePreview = '';
+    this.currentMess.image = ''
+  }
 }
