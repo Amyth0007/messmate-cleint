@@ -11,4 +11,5 @@ export interface Location {
   distance: number;
   routeDistance?: string;
   routeDuration?: string;
+  image?: string;
 }

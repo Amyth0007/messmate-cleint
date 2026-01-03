@@ -117,7 +117,7 @@ export class DashboardComponent implements OnInit {
     private userService: UserService,
     private locationService: LocationService
   ) {
-    // this.directionsService = new google.maps.DirectionsService();
+    this.directionsService = new google.maps.DirectionsService();
     this.getmessLocations();
   }
 
@@ -268,6 +268,17 @@ export class DashboardComponent implements OnInit {
     
     return data;
   }
+
+  getInitials(name: string): string {
+      if (!name) return '?';
+      return name
+        .split(' ')
+        .map(word => word[0])
+        .join('')
+        .substring(0, 2)
+        .toUpperCase();
+  }
+
 
   async updateRouteDistances() {
     if (!this.userLocation) {
