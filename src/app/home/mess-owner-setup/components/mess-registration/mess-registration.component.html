@@ -1,60 +1,76 @@
 <div class="setup-container">
-    <h2 class="setup-title">Mess Registration</h2>
-    <form [formGroup]="messForm" (ngSubmit)="onSubmit()" class="setup-content-vertical">
-      <div class="input-group">
-        <input class="setup-input" formControlName="name" placeholder="Mess Name" />
-      </div>
-      <div class="input-group">
-        <textarea class="setup-input description-box" formControlName="description" placeholder="Description" rows="3"></textarea>
-      </div>
-      <div class="input-group radio-group">
-        <label class="radio-label">Mess Type:</label>
-        <label class="radio-inline">
-          <input type="radio" formControlName="type" value="veg" /> Veg
-        </label>
-        <label class="radio-inline">
-          <input type="radio" formControlName="type" value="non-veg" /> Non-Veg
-        </label>
-        <label class="radio-inline">
-          <input type="radio" formControlName="type" value="both" /> Both
-        </label>
-      </div>
-      <div class="input-group">
-        <input class="setup-input" formControlName="city" placeholder="City" />
-      </div>
-      <div class="input-group location-group">
-        <button type="button" class="setup-btn location-btn" (click)="onDetectLocation()">
-          <span class="material-icons">my_location</span> Detect Location
-        </button>
-        <div class="location-info" *ngIf="address">
-          <span class="material-icons">location_on</span>
-          {{ address }}
-        </div>
-      </div>
-      <div class="input-group">
-        <label class="upload-label">
-          <input type="file" (change)="onUploadImage($event)" accept="image/*" hidden />
-          <span class="material-icons upload-icon">upload_file</span> Upload Mess Image
-        </label>
-        <div class="file-info" *ngIf="selectedImageName && !imageUrl">
-          <span class="material-icons">insert_drive_file</span> {{ selectedImageName }}
-        </div>
-        <div class="image-preview-container" *ngIf="imageUrl">
-          <img [src]="imageUrl" alt="Mess preview" class="image-preview" />
-          <div class="image-preview-overlay">
-            <span class="material-icons check-icon">check_circle</span>
-            <span class="image-uploaded-text">Image uploaded successfully</span>
-          </div>
-        </div>
-        <div class="uploading-indicator" *ngIf="imageUploading">
-          <span class="material-icons spinning">sync</span>
-          <span>Uploading image...</span>
-        </div>
-      </div>
-      <div class="setup-footer">
-        <button class="setup-btn register" [disabled]="registering || imageUploading || !imageUrl" type="submit">
-          Register Mess (CTA)
+  <h2 class="setup-title">Mess Registration</h2>
+  <form [formGroup]="messForm" (ngSubmit)="onSubmit()" class="setup-content-vertical">
+    <div class="input-group">
+      <input class="setup-input" formControlName="name" placeholder="Mess Name" />
+    </div>
+    <div class="input-group">
+      <textarea class="setup-input description-box" formControlName="description" placeholder="Description"
+        rows="3"></textarea>
+    </div>
+    <div class="input-group radio-group">
+      <label class="radio-label">Mess Type:</label>
+      <label class="radio-inline">
+        <input type="radio" formControlName="type" value="veg" /> Veg
+      </label>
+      <label class="radio-inline">
+        <input type="radio" formControlName="type" value="non-veg" /> Non-Veg
+      </label>
+      <label class="radio-inline">
+        <input type="radio" formControlName="type" value="both" /> Both
+      </label>
+    </div>
+    <div class="input-group">
+      <input class="setup-input" formControlName="city" placeholder="City" />
+    </div>
+    <div class="input-group location-group">
+      <button type="button" class="setup-btn location-btn" (click)="onDetectLocation()"
+        [disabled]="addressLoading || locationError">
+        <span class="material-icons">my_location</span>
+        Detect Location
+      </button>
+
+      <div class="location-error" *ngIf="locationError && !addressLoading">
+        <p>Unable to detect location.</p>
+        <button type="button" class="setup-btn location-btn retry-btn" (click)="onDetectLocation()">
+          Try Again
         </button>
       </div>
-    </form>
-  </div>
+
+      <div class="loading-container" *ngIf="addressLoading">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Detecting location...</div>
+      </div>
+
+      <div class="location-info" *ngIf="address">
+        <span class="material-icons">location_on</span>
+        {{ address }}
+      </div>
+    </div>
+    <div class="input-group">
+      <label class="upload-label">
+        <input type="file" (change)="onUploadImage($event)" accept="image/*" hidden />
+        <span class="material-icons upload-icon">upload_file</span> Upload Mess Image
+      </label>
+      <div class="file-info" *ngIf="selectedImageName && !imageUrl">
+        <span class="material-icons">insert_drive_file</span> {{ selectedImageName }}
+      </div>
+      <div class="image-preview-container" *ngIf="imageUrl">
+        <img [src]="imageUrl" alt="Mess preview" class="image-preview" />
+        <div class="image-preview-overlay">
+          <span class="material-icons check-icon">check_circle</span>
+          <span class="image-uploaded-text">Image uploaded successfully</span>
+        </div>
+      </div>
+      <div class="uploading-indicator" *ngIf="imageUploading">
+        <span class="material-icons spinning">sync</span>
+        <span>Uploading image...</span>
+      </div>
+    </div>
+    <div class="setup-footer">
+      <button class="setup-btn register" [disabled]="registering || imageUploading || !imageUrl" type="submit">
+        Register Mess (CTA)
+      </button>
+    </div>
+  </form>
+</div>
