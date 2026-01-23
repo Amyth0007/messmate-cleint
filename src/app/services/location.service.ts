@@ -16,8 +16,8 @@ export class LocationService {
   getLocations(): Observable<any> {
     const currentUser : any = JSON.parse(localStorage.getItem('currentUser') || '{}');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${currentUser["token"]}`);
-    
-    return this.http.get(`${this.apiUrl}/messlocation`, { headers });
+
+    return this.http.get(`${this.apiUrl}/mess/messlocation`, { headers });
   }
 
   getCityFromCoordinates(lat: number, lng: number): Promise<string> {
@@ -36,10 +36,10 @@ export class LocationService {
 
             if (response && response.address) {
               // Try to get city from different possible fields
-              const city = response.address.city || 
-                          response.address.state_district || 
+              const city = response.address.city ||
+                          response.address.state_district ||
                           response.address.state;
-              
+
               if (city) {
                 resolve(city);
               } else {

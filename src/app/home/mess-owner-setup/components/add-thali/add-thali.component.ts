@@ -10,6 +10,7 @@ import { SnackBarService } from 'src/app/services/snack-bar.service';
 import { ThaliService } from 'src/app/services/thalis.service';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog/confirm-dialog.component';
 import { thaliTimeRangeValidator } from '../../shared/thali-time-range-validator';
+import { UpdateThaliPayload } from 'src/app/payloads/thali.payload';
 
 @Component({
   selector: 'app-add-thali',
@@ -54,6 +55,9 @@ export class AddThaliComponent implements OnInit, OnDestroy {
   messTypes: any;
   imageUrl: any = null;
   imageUploading: boolean = true;
+  existingDate='';
+  newAvailableFrom='';
+  newAvailableUntil ='';
 
   constructor(
     private fb: FormBuilder,
@@ -104,6 +108,7 @@ export class AddThaliComponent implements OnInit, OnDestroy {
 
   private setupFormInitialState(): void {
     if (this.thaliData) {
+      console.log(this.thaliData);
       this.patchThali(this.thaliData);
       this.selectedImagePreview = this.thaliData.image;
       this.selectedImage = new File([], this.thaliData.image) as File;
@@ -325,8 +330,34 @@ export class AddThaliComponent implements OnInit, OnDestroy {
       };
 
       if (this.thaliData?.id) {
+        this.existingDate = this.thaliData.availableFrom.split(' ')[0];
+        this.newAvailableFrom = `${this.existingDate} ${formValue.availableFrom}`;
+        this.newAvailableUntil = `${this.existingDate} ${formValue.availableUntil}`;
+        const updatePayload: UpdateThaliPayload = {
+          ...this.thaliData,
+
+          // ✅ rebuild datetime with SAME date + NEW time
+          availableFrom: this.newAvailableFrom,
+          availableUntil: this.newAvailableUntil,
+
+          // other edited fields
+          thaliName: formValue.thaliName!,
+          rotis: formValue.rotis!,
+          sabzi: formValue.sabzi!,
+          daal: formValue.daal === 'yes',
+          daalReplacement: formValue.daalReplacement || '',
+          rice: formValue.rice === 'yes',
+          salad: formValue.salad === 'yes',
+          sweet: formValue.sweet === 'yes',
+          sweetInfo: formValue.sweetInfo || '',
+          otherItems: formValue.otherItems || '',
+          price: formValue.price!,
+          image: this.imageUrl as string,
+          published: formValue.published || false,
+          editable: formValue.editable !== false
+        };
         // For updates, emit just the id to indicate success
-        this.thaliService.updateThali(this.thaliData.id, thaliData).subscribe({
+        this.thaliService.updateThali(this.thaliData.id, updatePayload).subscribe({
           next: (response) => {
             this.snackBar.showSuccess('Thali updated successfully!');
             this.router.navigate(['/mess-owner/setup/my-thalis']);

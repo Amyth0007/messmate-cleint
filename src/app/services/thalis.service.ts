@@ -6,12 +6,13 @@ import { Observable } from 'rxjs';
 import { Thali, ThaliType } from '../auth/interfaces/thali.interface';
 import { AuthService } from '../auth/services/auth-service/auth.service';
 import { environment } from 'src/environments/environment';
+import { CreateThaliPayload, UpdateThaliPayload } from '../payloads/thali.payload';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ThaliService {
-  private apiUrl = `${environment.apiUrl}`;
+  private apiUrl = `${environment.apiUrl}/thalis`;
 
   constructor(private http: HttpClient, private authService: AuthService) { }
 
@@ -23,29 +24,57 @@ export class ThaliService {
     });
   }
 
-  // Transform new thali data (without id) to backend format
-  private transformNewThaliToBackendFormat(thaliData: Omit<Thali, 'id' | 'available_date' | 'availableFrom' | 'availableUntil'>): any {
-        // debugger;
-    return {
-      thali_name: thaliData.thaliName,
-      type: thaliData.type,
-      published: thaliData.published || false,
-      editable: thaliData.editable !== false,
-      available_from: thaliData.timeFrom,
-      available_until: thaliData.timeTo,
-      rotis: thaliData.rotis,
-      sabzi: thaliData.sabzi,
-      daal: thaliData.daal,
-      daal_replacement: thaliData.daalReplacement,
-      rice: thaliData.rice,
-      salad: thaliData.salad,
-      sweet: thaliData.sweet,
-      sweet_info: thaliData.sweetInfo,
-      other_items: thaliData.otherItems,
-      price: thaliData.price,
-      image: thaliData.image
-    };
-  }
+private transformCreateThali(thali: CreateThaliPayload): any {
+  return {
+    thali_name: thali.thaliName,
+    type: thali.type,
+    published: thali.published || false,
+    editable: true,
+
+    // backend will attach date
+    available_from: thali.timeFrom,
+    available_until: thali.timeTo,
+
+    rotis: thali.rotis,
+    sabzi: thali.sabzi,
+    daal: thali.daal,
+    daal_replacement: thali.daalReplacement,
+    rice: thali.rice,
+    salad: thali.salad,
+    sweet: thali.sweet,
+    sweet_info: thali.sweetInfo,
+    other_items: thali.otherItems,
+    price: thali.price,
+    image: thali.image
+  };
+}
+
+private transformUpdateThali(thali: UpdateThaliPayload): any {
+  return {
+    thali_name: thali.thaliName,
+    type: thali.type,
+    published: thali.published,
+    editable: thali.editable,
+
+    // full datetime preserved
+    available_from: thali.availableFrom,
+    available_until: thali.availableUntil,
+
+    rotis: thali.rotis,
+    sabzi: thali.sabzi,
+    daal: thali.daal,
+    daal_replacement: thali.daalReplacement,
+    rice: thali.rice,
+    salad: thali.salad,
+    sweet: thali.sweet,
+    sweet_info: thali.sweetInfo,
+    other_items: thali.otherItems,
+    price: thali.price,
+    image: thali.image
+  };
+}
+
+
 
   // Transform backend response to frontend format (includes id)
   transformToFrontendFormat(thaliData: any): Thali {
@@ -75,19 +104,21 @@ export class ThaliService {
     };
   }
 
-  // For adding new thali - accepts data without id
-  addThali(thaliData: Omit<Thali, 'id' | 'available_date' | 'availableFrom' | 'availableUntil'>): Observable<Thali> {
-    const backendThali = this.transformNewThaliToBackendFormat(thaliData);
-    // debugger;
-    return this.http.post<Thali>(`${this.apiUrl}/add-thali`, backendThali, { headers: this.getHeaders() });
-  }
+// ADD (time-only payload)
+addThali(thaliData: CreateThaliPayload): Observable<Thali> {
+  const backendThali = this.transformCreateThali(thaliData);
+  return this.http.post<Thali>(`${this.apiUrl}/add-thali`, backendThali, {
+    headers: this.getHeaders()
+  });
+}
 
-  // For updating existing thali - requires id
-  updateThali(thaliId: number, thaliData: Omit<Thali, 'id' | 'available_date' | 'availableFrom' | 'availableUntil'>): Observable<any> {
-    const backendThali = this.transformNewThaliToBackendFormat(thaliData);
-    debugger;
-    return this.http.put(`${this.apiUrl}/update-thali/${thaliId}`, backendThali, { headers: this.getHeaders() });
-  }
+// UPDATE (full datetime payload)
+updateThali(thaliId: number, thaliData: UpdateThaliPayload): Observable<any> {
+  const backendThali = this.transformUpdateThali(thaliData);
+  return this.http.put(`${this.apiUrl}/update-thali/${thaliId}`, backendThali, {
+    headers: this.getHeaders()
+  });
+}
 
   // Delete a thali (soft delete)
   deleteThali(thaliId: number): Observable<any> {
