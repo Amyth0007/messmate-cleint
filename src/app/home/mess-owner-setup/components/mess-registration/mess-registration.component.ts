@@ -49,6 +49,7 @@ export class MessRegistrationComponent {
       const position = await this.getCurrentPosition();
       const lat = position.coords.latitude;
       const lng = position.coords.longitude;
+      console.log(lat, lng);
 
       this.lat = lat;
       this.lng = lng;
