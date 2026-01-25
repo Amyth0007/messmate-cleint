@@ -90,7 +90,7 @@
             </div>
             <div class="thali-items">
               <p><strong>Sabzi:</strong> {{ thali.sabzi }}</p>
-              <p><strong>Daal:</strong> {{ thali.daal }}</p>
+              <p><strong>Daal:</strong> {{ thali.daal ? 'Yes' : 'No' }}</p>
               <p *ngIf="thali.sweet"><strong>Sweet:</strong> {{ thali.sweetInfo.trim() || 'Not specified' }}</p>
             </div>
           </div>
